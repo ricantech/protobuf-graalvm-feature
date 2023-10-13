@@ -29,11 +29,21 @@ tasks.named<Test>("test") {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ricantech/REPOSITORY")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("maven") {
             groupId = "io.github.ricantech"
             artifactId = "protobuf-graalvm-feature"
-            version = "1.0.0"
+            version = "0.0.1-SNAPSHOT-1"
 
             from(components["java"])
         }
