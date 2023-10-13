@@ -16,7 +16,7 @@ class ProtobufFeature : Feature {
             .classLoader
             .getResourceAsStream("features/protobuf-packages.properties")
             ?.let { loadPackagedToScan(it) }
-            ?.map { Reflections(it, Scanners.SubTypes) } ?: listOf(Reflections()))
+            ?.map { Pair(it, Reflections(it, Scanners.SubTypes)) } ?: listOf(Pair("*", Reflections())))
             .forEach { src -> registerGrpcClassesFromReflection(access, src) }
     }
 
@@ -26,12 +26,16 @@ class ProtobufFeature : Feature {
         return props.stringPropertyNames()
     }
 
-    private fun registerGrpcClassesFromReflection(access: BeforeAnalysisAccess, ref: Reflections) {
-        (ref.getSubTypesOf(GeneratedMessageV3::class.java) +
-                ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java))
-            .forEach {
-                println("Registering for runtime reflection: ${it.name}")
-                ReflectionRegistrationUtils.registerAll(access, it.name)
-            }
+    private fun registerGrpcClassesFromReflection(
+        access: BeforeAnalysisAccess,
+        packageNameWithReflections: Pair<String, Reflections>
+    ) {
+        val ref = packageNameWithReflections.second
+        val classesToBeRegistered = ref.getSubTypesOf(GeneratedMessageV3::class.java) +
+                ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java)
+        println("Registering for runtime reflection {package=${packageNameWithReflections.first}}: $classesToBeRegistered")
+        classesToBeRegistered.forEach {
+            ReflectionRegistrationUtils.registerAll(access, it.name)
+        }
     }
 }

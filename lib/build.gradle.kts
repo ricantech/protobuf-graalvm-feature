@@ -43,7 +43,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "io.github.ricantech"
             artifactId = "protobuf-graalvm-feature"
-            version = "0.0.1-alpha.1"
+            version = "1.0.0-beta.1"
 
             from(components["java"])
         }
