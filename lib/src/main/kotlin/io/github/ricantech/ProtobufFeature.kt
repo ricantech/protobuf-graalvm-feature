@@ -1,6 +1,7 @@
 package io.github.ricantech
 
 import com.google.protobuf.GeneratedMessageV3
+import com.google.protobuf.ProtocolMessageEnum
 import io.github.ricantech.utils.ReflectionRegistrationUtils
 import org.graalvm.nativeimage.hosted.Feature
 import org.graalvm.nativeimage.hosted.Feature.BeforeAnalysisAccess
@@ -32,7 +33,7 @@ class ProtobufFeature : Feature {
     ) {
         val ref = packageNameWithReflections.second
         val classesToBeRegistered = ref.getSubTypesOf(GeneratedMessageV3::class.java) +
-                ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java)
+                ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java) + ref.getSubTypesOf(ProtocolMessageEnum::class.java)
         println("Registering for runtime reflection {package=${packageNameWithReflections.first}}: $classesToBeRegistered")
         classesToBeRegistered.forEach {
             ReflectionRegistrationUtils.registerAll(access, it.name)
