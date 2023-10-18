@@ -32,11 +32,35 @@ class ProtobufFeature : Feature {
         packageNameWithReflections: Pair<String, Reflections>
     ) {
         val ref = packageNameWithReflections.second
-        val classesToBeRegistered = ref.getSubTypesOf(GeneratedMessageV3::class.java) +
-                ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java) + ref.getSubTypesOf(ProtocolMessageEnum::class.java)
-        println("Registering for runtime reflection {package=${packageNameWithReflections.first}}: $classesToBeRegistered")
-        classesToBeRegistered.forEach {
-            ReflectionRegistrationUtils.registerAll(access, it.name)
+        val toRegister = mapOf(
+            ref.getSubTypesOf(GeneratedMessageV3::class.java) to ({ clazz: Class<out Any> ->
+                ReflectionRegistrationUtils.registerAll(
+                    access,
+                    clazz.name
+                )
+            }),
+            ref.getSubTypesOf(GeneratedMessageV3.Builder::class.java) to ({ clazz: Class<out Any> ->
+                ReflectionRegistrationUtils.registerAll(
+                    access,
+                    clazz.name
+                )
+            }),
+            ref.getSubTypesOf(ProtocolMessageEnum::class.java) to ({ clazz: Class<out Any> ->
+                ReflectionRegistrationUtils.registerAllButInstantiation(
+                    access,
+                    clazz.name
+                )
+            })
+        )
+        println(
+            "Registering for runtime reflection {package=${packageNameWithReflections.first}}: ${
+                toRegister.flatMap { it.key }.map { it.name }
+            }"
+        )
+        toRegister.forEach { entry ->
+            entry.key.forEach { clazz ->
+                entry.value.invoke(clazz)
+            }
         }
     }
 }

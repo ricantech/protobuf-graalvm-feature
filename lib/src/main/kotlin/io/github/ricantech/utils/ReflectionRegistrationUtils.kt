@@ -13,6 +13,14 @@ object ReflectionRegistrationUtils {
         registerConstructorsForRuntimeReflection(clazz);
     }
 
+    fun registerAllButInstantiation(access: Feature.BeforeAnalysisAccess, className: String) {
+        val clazz = access.findClassByName(className)
+        registerForRuntimeReflection(clazz);
+        registerFieldsForRuntimeReflection(clazz);
+        registerMethodsForRuntimeReflection(clazz);
+        registerConstructorsForRuntimeReflection(clazz);
+    }
+
     private fun registerForRuntimeReflection(clazz: Class<*>) {
         RuntimeReflection.register(clazz)
     }
